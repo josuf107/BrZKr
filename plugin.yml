@@ -1,0 +1,9 @@
+name: BrZKr
+main: io.github.josuf107.brzkr.BrZKr
+version: 0
+commands:
+    hello:
+        description: Say hello
+        usage: /hello
+        permission: BrZKr.basic
+        permission-message: You suck
