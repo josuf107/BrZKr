@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -39,6 +40,18 @@ public final class BrZKr extends JavaPlugin implements Listener {
     }
 
     final EffectStack coalEffects = new EffectStack();
+    final EffectStack glowStoneEffects = new EffectStack();
+
+    @EventHandler
+    public void entityKilled(final EntityDeathEvent deathEvent) {
+        final LivingEntity player = deathEvent.getEntity().getKiller();
+        if(coalEffects.timeSinceEffect(player) < 20) {
+            // This means they killed someone less than twenty seconds
+            // since they used the coal effect
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 5, 5));
+            // Speed them up (just an example)
+        }
+    }
 
     @EventHandler
     public void clickEvent(final InventoryClickEvent clickEvent) {
