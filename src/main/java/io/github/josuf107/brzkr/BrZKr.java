@@ -50,7 +50,7 @@ public final class BrZKr extends JavaPlugin implements Listener {
                 coalEffects.addEffect(PotionEffectType.INCREASE_DAMAGE, 5, 20);
                 coalEffects.addEffect(PotionEffectType.SLOW, 5, 3);
                 coalEffects.addEffect(PotionEffectType.POISON, 5, 1);
-                coalEffects.doEffects(player, 20);
+                coalEffects.doEffects(player, 20, "You're strong! ...but slow");
             }
         }
     }
@@ -71,7 +71,8 @@ public final class BrZKr extends JavaPlugin implements Listener {
         }
 
         public boolean doEffects( final LivingEntity entity
-                                , final int cooldown) {
+                                , final int cooldown
+                                , final String message) {
             final long timeNow = System.currentTimeMillis();
             final long lastTime;
             if(timeMap.get(entity) == null) {
@@ -85,7 +86,7 @@ public final class BrZKr extends JavaPlugin implements Listener {
                 timeMap.put(entity, timeNow);
                 effects.clear();
                 if(entity instanceof Player) {
-                    ((Player) entity).sendMessage("You're strong! ...but slow");
+                    ((Player) entity).sendMessage(message);
                 }
                 return true;
             } else {
