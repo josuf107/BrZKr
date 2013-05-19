@@ -57,47 +57,57 @@ public final class BrZKr extends JavaPlugin implements Listener {
     public void clickEvent(final InventoryClickEvent clickEvent) {
         if(clickEvent.isRightClick()) {
             final int COAL = 263;
+            final int GLOWSTONE = 0;
             final int id = clickEvent.getCurrentItem().getTypeId();
             final LivingEntity player = clickEvent.getWhoClicked();
             if(id == COAL) {
-                coalEffects.addEffect(PotionEffectType.INCREASE_DAMAGE, 5, 20);
-                coalEffects.addEffect(PotionEffectType.SLOW, 5, 3);
-                coalEffects.addEffect(PotionEffectType.POISON, 5, 1);
+                //addEffect( type, duration, amplitude )
+                coalEffects.addEffect(player, PotionEffectType.INCREASE_DAMAGE, 5, 20);
+                coalEffects.addEffect(player, PotionEffectType.SLOW, 5, 3);
+                coalEffects.addEffect(player, PotionEffectType.POISON, 5, 1);
+                //doEffects( entity, cooldown, message )
                 coalEffects.doEffects(player, 20, "You're strong! ...but slow");
+            } else if (id == GLOWSTONE) {
+                // Anthony writes his code here using glowStoneEffects
             }
         }
     }
 
     private class EffectStack {
         private final Map<LivingEntity, Long> timeMap;
-        private final Collection<PotionEffect> effects;
+        private final Map<LivingEntity, Collection<PotionEffect>> effects;
 
         public EffectStack() {
             timeMap = new HashMap<LivingEntity, Long>();
-            effects = new LinkedList<PotionEffect>();
+            effects = new HashMap<LivingEntity, Collection<PotionEffect>>();
         }
 
-        public void addEffect( final PotionEffectType type
+        public void addEffect   ( final LivingEntity entity
+                                , final PotionEffectType type
                                 , final int duration
                                 , final int amplitude) {
-            effects.add(new PotionEffect(type, duration, amplitude));
+            final Collection<PotionEffect> stack;
+            if (effects.get(entity) == null) {
+                stack = new LinkedList<PotionEffect>();
+                effects.put(entity, stack);
+            } else {
+                stack = effects.get(entity);
+            }
+            stack.add(new PotionEffect(type, 20 * duration, amplitude));
         }
 
         public boolean doEffects( final LivingEntity entity
                                 , final int cooldown
                                 , final String message) {
-            final long timeNow = System.currentTimeMillis();
-            final long lastTime;
-            if(timeMap.get(entity) == null) {
-                lastTime = 0;
-            } else {
-                lastTime = timeMap.get(entity);
+            if(effects.get(entity) == null) {
+                return false;
             }
-            final long secondsElapsed = (timeNow - lastTime) / 1000;
+            final long secondsElapsed = timeSinceEffect(entity);
+            final long timeNow = System.currentTimeMillis();
             if(secondsElapsed > cooldown) {
-                entity.addPotionEffects(effects);
+                entity.addPotionEffects(effects.get(entity));
                 timeMap.put(entity, timeNow);
-                effects.clear();
+                effects.get(entity).clear();
                 if(entity instanceof Player) {
                     ((Player) entity).sendMessage(message);
                 }
@@ -109,14 +119,16 @@ public final class BrZKr extends JavaPlugin implements Listener {
                 return false;
             }
         }
-    }
 
-    public boolean affect   ( final LivingEntity entity
-                            , final PotionEffectType type
-                            , final int duration
-                            , final int amplitude) {
-        final PotionEffect effect;
-        effect = new PotionEffect(type, duration, amplitude);
-        return entity.addPotionEffect(effect);
+        public long timeSinceEffect(final LivingEntity entity) {
+            final long timeNow = System.currentTimeMillis();
+            final long lastTime;
+            if(timeMap.get(entity) == null) {
+                lastTime = 0;
+            } else {
+                lastTime = timeMap.get(entity);
+            }
+            return (timeNow - lastTime) / 1000;
+        }
     }
 }
